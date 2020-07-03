@@ -1,0 +1,22 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t amutaa/multi-docker -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run amutaa/multi-docker npm run test -- --coverage
+
+after-success:
+  - docker build -t amutaa/multi-client ./client
+  - docker build -t amutaa/multi-nginx ./nginx
+  - docker build -t amutaa/multi-server ./server
+  - docker build -t amutaa/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u  "$DOCKER_ID" --password-stdin
+
+  - docker push amutaa/multi-client
+  - docker push amutaa/multi-nginx
+  - docker push amutaa/multi-server
+  - docker push amutaa/multi-worker
