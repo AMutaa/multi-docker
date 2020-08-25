@@ -16,13 +16,12 @@ const pgClient = new Pool({
   host: keys.pgHost,
   database: keys.pgDatabase,
   password: keys.pgPassword,
-  port: keys.pgPort
+  port: keys.pgPort,
 });
 
 pgClient.on('connect', () => {
-  console.log('Creating table')
   pgClient
-    .query("CREATE TABLE IF NOT EXISTS values (number INT)")
+    .query('CREATE TABLE IF NOT EXISTS values (number INT)')
     .catch((err) => console.log(err));
 });
 
@@ -42,7 +41,7 @@ app.get('/', (req, res) => {
 });
 
 app.get('/values/all', async (req, res) => {
-  const values = await pgClient.query("SELECT * from values");
+  const values = await pgClient.query('SELECT * from values');
 
   res.send(values.rows);
 });
@@ -56,17 +55,17 @@ app.get('/values/current', async (req, res) => {
 app.post('/values', async (req, res) => {
   const index = req.body.index;
 
-  if(parseInt(index) > 40) {
+  if (parseInt(index) > 40) {
     return res.status(422).send('Index too high');
   }
 
-  redisClient.hset('values', index, "Nothing yet!");
+  redisClient.hset('values', index, 'Nothing yet!');
   redisPublisher.publish('insert', index);
-  pgClient.query("INSERT INTO values(number) VALUES($1)", [index]);
+  pgClient.query('INSERT INTO values(number) VALUES($1)', [index]);
 
-  res.send({ working: true});
+  res.send({ working: true });
 });
 
 app.listen(5000, (err) => {
-  console.log('Listening')
-})
+  console.log('Listening');
+});
